@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ice Core Age–Depth Profiles</title>
+  <style>
+    :root {
+      --ice-blue: #e8f4fb;
+      --deep-blue: #16577e;
+      --accent: #2b8ac4;
+      --text: #22303a;
+      --warning: #a15c00;
+      --error: #b3261e;
+      --border: #c9dde9;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: linear-gradient(160deg, #f4fbff 0%, var(--ice-blue) 100%);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 12px 30px rgba(22,87,126,.12);
+    }
+
+
+    h1 { margin: 0 0 6px; font-size: 1.5rem; color: var(--deep-blue); }
+    .subtitle { margin: 0 0 24px; font-size: .95rem; color: #5b6b76; }
+    .version { margin: 0 0 16px; margin-top: 4px; font-size: .8rem; line-height: 1.3; color: #899ca8;}
+    .intro { margin: 0 0 16px; font-size: .95rem; line-height: 1.5; color: #5b6b76; }
+
+    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: .9rem; color: var(--deep-blue); }
+
+    select, input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 1rem;
+      color: var(--text);
+      background: #fbfdff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(43,138,196,.18);
+    }
+
+    .field { margin-bottom: 16px; }
+    .hidden { display: none; }
+
+    .range {
+      margin: 0 0 16px;
+      padding: 10px 14px;
+      font-size: .9rem;
+      color: var(--deep-blue);
+      background: var(--ice-blue);
+      border-radius: 8px;
+    }
+
+    .reference {
+      margin: 24px 0 0;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: #6b7a85;
+      text-align: center;
+    }
+
+    .reference a {
+      color: var(--deep-blue);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--deep-blue);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s ease, transform .1s ease;
+    }
+
+    button:hover { background: var(--accent); }
+    button:active { transform: translateY(1px); }
+
+    #output { margin-top: 24px; }
+    #output h2 { margin: 0 0 12px; font-size: 1.15rem; color: var(--deep-blue); }
+
+    #output ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+
+    #output li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--ice-blue);
+      border-radius: 8px;
+      font-size: .98rem;
+    }
+
+    #output strong { min-width: 110px; color: var(--deep-blue); }
+
+    .warning, .bedrock, .basal, .stagnant {
+      margin: 16px 0 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--warning);
+      background: #fff7e8;
+      color: var(--warning);
+      border-radius: 6px;
+      white-space: pre-line;
+    }
+
+    .error {
+      margin: 16px 0 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--error);
+      background: #fdecea;
+      color: var(--error);
+      border-radius: 6px;
+    }
+
+    .credit { margin-top: 24px; font-size: .8rem; color: #6b7a85; text-align: center; }
+
+    @media (max-width: 480px) {
+      .card { padding: 20px; }
+      #output li { flex-direction: column; gap: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Ice Core Age–Depth Profiles</h1>
+    <p class="subtitle">Choose an ice core to calculate depth, age, or resolution.</p>
+
+    <div class="field">
+      <label for="core-select">Choose ice core</label>
+      <select id="core-select">
+        <option value="">Choose an ice core</option>
+        <option value="myic">Million Year Ice Core (MYIC)</option>
+        <option value="beldc">Beyond EPICA – Oldest Ice (BELDC)</option>
+      </select>
+    </div>
+
+    <p id="core-version" class="version"></p>
+
+    <div id="core-details" class="hidden">
+      <p id="core-intro" class="intro"></p>
+
+        <label for="parameter-select">Choose parameter</label>
+        <select id="parameter-select">
+          <option value="">Choose a parameter</option>
+          <option value="depth">Depth</option>
+          <option value="age">Age</option>
+          <option value="resolution">Resolution</option>
+        </select>
+      </div>
+
+      <div id="value-section" class="hidden">
+        <p id="range-text" class="range"></p>
+        <div class="field">
+          <label for="value-input">Choose value</label>
+          <input id="value-input" type="number" step="any" autocomplete="off">
+        </div>
+        <button id="calculate-button" type="button">Calculate</button>
+      </div>
+    </div>
+
+    <div id="output"></div>
+
+    <p id="core-reference" class="reference"></p>
+
+    <p class="credit">
+      Brought to you by Ailsa Chung,<br>
+      <a href="mailto:ailsa.chung@unibe.ch">ailsa.chung@unibe.ch</a>
+    </p>
+  </main>
+
+  <script src="ice_core_calculator.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const coreSelect = document.getElementById("core-select");
+      const coreDetails = document.getElementById("core-details");
+      const coreIntro = document.getElementById("core-intro");
+      const coreVersion = document.getElementById("core-version");
+      const coreReference = document.getElementById("core-reference");
+      const parameterSelect = document.getElementById("parameter-select");
+      const valueSection = document.getElementById("value-section");
+      const rangeText = document.getElementById("range-text");
+      const valueInput = document.getElementById("value-input");
+      const calculateButton = document.getElementById("calculate-button");
+      const output = document.getElementById("output");
+
+      let hasCalculated = false;
+
+      const version = {
+        myic: "Version 2, updated 23 Mar 2026.",
+        beldc: "Updated 13 Oct 2026<br>1D model age resolution variability fix.<br>Uses DEP tie-points from Frank Wilhelms up to 1.2 Ma from field measurements."
+      };
+
+      const intros = {
+        myic: "Calculate depth, age, or resolution from the MYIC age–depth profile.",
+        beldc: "Calculate depth, age, or resolution from the BELDC age–depth profile."
+      };
+
+      function resetCalculation() {
+        parameterSelect.value = "";
+        valueInput.value = "";
+        valueSection.classList.add("hidden");
+        output.innerHTML = "";
+        hasCalculated = false;
+      }
+
+      function updateRange() {
+        const core = CORES[coreSelect.value];
+        const parameter = parameterSelect.value;
+        if (core && parameter) {
+          rangeText.textContent = core.ranges[parameter];
+        }
+      }
+
+      function showResult() {
+        try {
+          const result = calculate(coreSelect.value, parameterSelect.value, valueInput.value);
+
+          if (result.status !== "ok") {
+            output.innerHTML = '<p class="' + result.status + '">' + result.message + "</p>";
+            return;
+          }
+
+          let html = "<h2>Results for " + CORES[result.coreName].name + "</h2><ul>";
+
+          ["depth", "age", "resolution"].forEach(function (name) {
+            html += "<li><strong>" + name + " :</strong> " +
+              formatNumber(result.results[name]) + " " + PARAMETER_UNITS[name] + "</li>";
+          });
+
+          html += "</ul>";
+
+          result.warnings.forEach(function (warning) {
+            html += '<p class="warning">' + warning + "</p>";
+          });
+
+          output.innerHTML = html;
+          hasCalculated = true;
+        } catch (error) {
+          output.innerHTML = '<p class="error">' + error.message + "</p>";
+        }
+      }
+
+      coreSelect.addEventListener("change", function () {
+        if (!coreSelect.value) {
+          coreVersion.innerHTML = "";
+          coreReference.innerHTML = "";
+          coreDetails.classList.add("hidden");
+          resetCalculation();
+          return;
+        }
+
+        const core = CORES[coreSelect.value];
+
+        coreVersion.innerHTML = core.version;
+        coreReference.innerHTML = core.reference;
+        coreIntro.innerHTML = intros[coreSelect.value];
+        coreDetails.classList.remove("hidden");
+        resetCalculation();
+      });
+
+      parameterSelect.addEventListener("change", function () {
+        if (!parameterSelect.value) {
+          valueSection.classList.add("hidden");
+          output.innerHTML = "";
+          hasCalculated = false;
+          return;
+        }
+
+        updateRange();
+        valueSection.classList.remove("hidden");
+
+        if (hasCalculated && valueInput.value !== "") {
+          showResult();
+        } else {
+          output.innerHTML = "";
+        }
+      });
+
+      valueInput.addEventListener("input", function () {
+        if (hasCalculated && valueInput.value !== "") {
+          showResult();
+        }
+      });
+
+      calculateButton.addEventListener("click", showResult);
+
+      valueInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          showResult();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
