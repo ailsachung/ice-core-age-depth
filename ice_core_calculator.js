@@ -14,7 +14,7 @@ const CORES = {
     ageLimit: null,
     ranges: {
       depth: "Range 0 m < depth < 3064 m",
-      age: "Range -51 yr < age BP < 4408622 yrs",
+      age: "Range -51 yr < age BP < 4400000 yrs",
       resolution: "Range 0 yrs/m < resolution < 30000 yrs/m"
     }
   },
